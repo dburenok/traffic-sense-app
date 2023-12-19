@@ -1,18 +1,20 @@
 import { useState, useEffect } from "react";
+
 import { Chart as ChartJS, TimeScale } from "chart.js/auto";
 import { Bar } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+
+import Map from "react-map-gl";
+import DeckGL from "@deck.gl/react";
+import { ColumnLayer } from "@deck.gl/layers";
+
 import Axios from "axios";
-import Map, { Marker } from "react-map-gl";
-import { map, toPairs, sortBy, last } from "lodash";
+import { map, toPairs, sortBy, last, values } from "lodash";
 import "./App.css";
 
-const DATA_URL = process.env.REACT_APP_DATA_URL;
+ChartJS.register(TimeScale);
 
-const SHOW_OPTIONS = {
-  map: true,
-  chart: true,
-};
+const DATA_URL = process.env.REACT_APP_DATA_URL;
 
 const initialViewState = {
   latitude: 49.25225056888473,
@@ -30,17 +32,35 @@ const chartOptions = {
     legend: { display: false },
   },
 };
-ChartJS.register(TimeScale);
 
 function App() {
   const [chartData, setChartData] = useState({ datasets: [] });
   const [chartDataSnapshot, setChartDataSnapshot] = useState([]);
+  const [maxVehicleCount, setMaxVehicleCount] = useState(Number.NEGATIVE_INFINITY);
+
+  const layer = new ColumnLayer({
+    id: "intersections-column-layer",
+    data: map(values(chartDataSnapshot), ({ location, vehicleCount }) => ({
+      location: [parseFloat(location.long), parseFloat(location.lat)],
+      vehicleCount: vehicleCount / maxVehicleCount,
+    })),
+    diskResolution: 15,
+    radius: 100,
+    extruded: true,
+    elevationScale: 4000,
+    getPosition: (d) => d.location,
+    getElevation: (d) => d.vehicleCount,
+    getFillColor: (d) => [d.vehicleCount * 255, (1 - d.vehicleCount) * 255, 0],
+  });
 
   useEffect(() => {
     Axios.get(DATA_URL)
       .then((res) => res.data["data"] ?? {})
       .then((data) => {
         const pairs = toPairs(data);
+
+        const maxCount = Math.max(...map(pairs, ([_, { data }]) => Math.max(...map(data, "vehicleCount"))));
+        setMaxVehicleCount(maxCount);
 
         setChartDataSnapshot(
           map(pairs, ([intersection, { data, location }]) => ({
@@ -65,37 +85,23 @@ function App() {
 
   return (
     <div className="container">
-      <h2>Traffic Flow Chart</h2>
-      {SHOW_OPTIONS.chart && (
-        <div className="chartContainer">
-          <Bar data={chartData} options={chartOptions} />
-        </div>
-      )}
-
-      <h2>Traffic Flow Map</h2>
-      {SHOW_OPTIONS.map && (
+      <DeckGL
+        style={{ position: "relative" }}
+        height={500}
+        initialViewState={initialViewState}
+        controller={true}
+        layers={[layer]}
+      >
         <Map
-          mapLib={import("mapbox-gl")}
           reuseMaps={true}
           attributionControl={false}
           antialias={true}
           mapStyle="mapbox://styles/mapbox/streets-v9"
-          initialViewState={initialViewState}
-          style={{ width: "100%", height: 720 }}
-        >
-          {map(chartDataSnapshot, ({ intersection, location, vehicleCount }, i) => {
-            const { lat, long } = location;
-            return (
-              <Marker
-                key={i}
-                latitude={lat}
-                longitude={long}
-                onClick={() => alert(`${vehicleCount} vehicles at ${intersection} (${lat}, ${long})`)}
-              ></Marker>
-            );
-          })}
-        </Map>
-      )}
+        />
+      </DeckGL>
+      <div className="chartContainer">
+        <Bar data={chartData} options={chartOptions} />
+      </div>
     </div>
   );
 }
