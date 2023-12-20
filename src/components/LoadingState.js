@@ -1,5 +1,9 @@
-function LoadingState({ setWelcomeDone }) {
-  setTimeout(() => setWelcomeDone(true), 1000);
+const MIN_LOAD_TIME_MS = 1000;
+
+function LoadingState({ props }) {
+  const { setWelcomeDone } = props;
+
+  setTimeout(() => setWelcomeDone(true), MIN_LOAD_TIME_MS);
 
   return (
     <div className="loading-text">
