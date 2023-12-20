@@ -5,8 +5,10 @@ import { map, values } from "lodash";
 
 const initialViewState = getInitialViewState();
 
-function TrafficMap({ chartDataSnapshot }) {
-  const layer = getColumnIntersectionLayer(chartDataSnapshot);
+function TrafficMap({ props }) {
+  const { mapData } = props;
+
+  const layer = getColumnIntersectionLayer(mapData);
 
   return (
     <DeckGL

@@ -5,7 +5,9 @@ ChartJS.register(TimeScale);
 
 const chartOptions = getChartOptions();
 
-function TrafficChart({ chartData }) {
+function TrafficChart({ props }) {
+  const { chartData } = props;
+
   return (
     <div className="chart-container">
       <Bar data={chartData} options={chartOptions} />
