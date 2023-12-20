@@ -30,10 +30,10 @@ function getMapData(pairs) {
 }
 
 function getLatestCount(data) {
-  const sortedData = sortBy(data, ({ timestamp }) => Date.parse(timestamp));
+  const sortedData = sortBy(data, ({ t }) => Date.parse(t));
   const latestData = last(sortedData);
 
-  return latestData["vehicleCount"];
+  return latestData["c"];
 }
 
 function getMaxCount(pairs) {
@@ -44,9 +44,9 @@ function getChartData(pairs) {
   return {
     datasets: map(pairs, ([intersection, { data }]) => ({
       label: intersection,
-      data: map(data, ({ timestamp, vehicleCount }) => ({
-        x: new Date(Date.parse(timestamp)),
-        y: vehicleCount,
+      data: map(data, ({ t, c }) => ({
+        x: new Date(Date.parse(t)),
+        y: c,
       })),
     })),
   };
