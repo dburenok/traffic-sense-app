@@ -37,7 +37,7 @@ function getLatestCount(data) {
 }
 
 function getMaxCount(pairs) {
-  return Math.max(...map(pairs, ([_, { data }]) => Math.max(...map(data, "vehicleCount"))));
+  return Math.max(...map(pairs, ([_, { data }]) => Math.max(...map(data, "c"))));
 }
 
 function getChartData(pairs) {
