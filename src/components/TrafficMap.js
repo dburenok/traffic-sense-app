@@ -1,8 +1,9 @@
 import { useState } from "react";
 import Map from "react-map-gl";
+import { map, values, toPairs, sortBy, last } from "lodash";
 import DeckGL from "@deck.gl/react";
 import { ColumnLayer } from "@deck.gl/layers";
-import { map, values, toPairs, sortBy, last } from "lodash";
+
 // import Box from "@mui/material/Box";
 // import Slider from "@mui/material/Slider";
 
@@ -28,7 +29,7 @@ function TrafficMap({ props }) {
           reuseMaps={true}
           attributionControl={false}
           antialias={true}
-          mapStyle="mapbox://styles/mapbox/streets-v9"
+          mapStyle="mapbox://styles/mapbox/outdoors-v12"
         />
       </DeckGL>
       {/* <Box sx={{ width: 600 }}>

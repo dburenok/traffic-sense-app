@@ -1,7 +1,7 @@
 import { Chart as ChartJS, TimeScale } from "chart.js/auto";
-import { Bar } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
-import { map, toPairs } from "lodash";
+import { map, toPairs, entries } from "lodash";
 ChartJS.register(TimeScale);
 
 const chartOptions = getChartOptions();
@@ -10,11 +10,7 @@ function TrafficChart({ props }) {
   const { trafficData } = props;
   const chartData = getChartData(trafficData);
 
-  return (
-    <div className="chart-container">
-      <Bar data={chartData} options={chartOptions} />
-    </div>
-  );
+  return <Line data={chartData} options={chartOptions} />;
 }
 
 export default TrafficChart;
@@ -26,12 +22,21 @@ function getChartOptions() {
         type: "timeseries",
         stacked: true,
         ticks: {
+          display: true,
+          autoSkip: false,
+          maxRotation: 90,
+          minRotation: 90,
+        },
+        grid: {
           display: false,
         },
       },
       y: {
         stacked: true,
         ticks: {
+          display: false,
+        },
+        grid: {
           display: false,
         },
       },
@@ -44,15 +49,32 @@ function getChartOptions() {
 }
 
 function getChartData(trafficData) {
-  const pairs = toPairs(trafficData);
+  const mergedCounts = getMergedCounts(trafficData);
+  const mergedCountsData = map(entries(mergedCounts), ([t, c]) => ({ x: new Date(Date.parse(t)), y: c }));
 
   return {
-    datasets: map(pairs, ([intersection, { data }]) => ({
-      label: intersection,
-      data: map(data, ({ t, c }) => ({
-        x: new Date(Date.parse(t)),
-        y: c,
-      })),
-    })),
+    datasets: [
+      {
+        label: "hourly-traffic",
+        data: mergedCountsData,
+      },
+    ],
   };
+}
+
+function getMergedCounts(trafficData) {
+  const mergedCounts = new Map();
+  const pairs = toPairs(trafficData);
+
+  for (const [, { data }] of pairs) {
+    for (const { t, c } of data) {
+      if (mergedCounts.has(t)) {
+        mergedCounts.set(t, mergedCounts.get(t) + c);
+      } else {
+        mergedCounts.set(t, c);
+      }
+    }
+  }
+
+  return mergedCounts;
 }

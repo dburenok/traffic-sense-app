@@ -1,4 +1,6 @@
 body {
+  background-color: rgb(29, 29, 29);
+  color: rgb(240, 240, 240);
   margin: 0;
   font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
