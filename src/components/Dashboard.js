@@ -1,3 +1,4 @@
+import { useState } from "react";
 import TrafficMap from "./TrafficMap";
 import TrafficChart from "./TrafficChart";
 import Container from "@mui/material/Container";
@@ -16,18 +17,20 @@ const darkTheme = createTheme({
 function Dashboard({ props }) {
   const { trafficData } = props;
 
+  const [snapshotIndex, setSnapshotIndex] = useState(0);
+
   return (
     <ThemeProvider theme={darkTheme}>
       <Navbar />
       <Container maxWidth="lg" sx={{ mt: "10px" }}>
         <Stack spacing={0.5}>
           <Card variant="outlined">
-            <TrafficMap props={{ trafficData }} />
+            <TrafficMap props={{ trafficData, snapshotIndex }} />
           </Card>
 
           <Card variant="outlined">
             <Box>
-              <TrafficChart props={{ trafficData }} />
+              <TrafficChart props={{ trafficData, setSnapshotIndex }} />
             </Box>
           </Card>
         </Stack>

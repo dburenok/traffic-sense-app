@@ -4,14 +4,13 @@ import "chartjs-adapter-date-fns";
 import { map, toPairs, entries } from "lodash";
 import Box from "@mui/material/Box";
 import Slider from "@mui/material/Slider";
-import Stack from "@mui/material/Stack";
 
 ChartJS.register(TimeScale);
 
 const chartOptions = getChartOptions();
 
 function TrafficChart({ props }) {
-  const { trafficData } = props;
+  const { trafficData, setSnapshotIndex } = props;
   const chartData = getChartData(trafficData);
   const numSnapshots = chartData.datasets[0].data.length;
 
@@ -23,7 +22,7 @@ function TrafficChart({ props }) {
         alignItems: "center",
       }}
     >
-      <Box sx={{ height: "200px", width: "100%" }}>
+      <Box sx={{ height: "200px", width: "97%" }}>
         <Line data={chartData} options={chartOptions} />
       </Box>
       <Box
@@ -31,7 +30,7 @@ function TrafficChart({ props }) {
           display: "flex",
           alignItems: "center",
           height: "55px",
-          width: "93%",
+          width: "95%",
         }}
       >
         <Slider
@@ -42,8 +41,7 @@ function TrafficChart({ props }) {
           min={1}
           max={numSnapshots}
           marks={true}
-          // scale={calculateRepresentationValue}
-          // onChange={(_, newValue) => handleSliderChange(newValue, setColumnRadius)}
+          onChange={(_, newIndex) => setSnapshotIndex(newIndex - 1)}
         />
       </Box>
     </Box>
@@ -71,7 +69,7 @@ function getChartOptions() {
       y: {
         stacked: true,
         ticks: {
-          display: true,
+          display: false,
         },
         grid: {
           display: false,

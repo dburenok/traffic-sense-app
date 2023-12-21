@@ -6,8 +6,8 @@ import { ColumnLayer } from "@deck.gl/layers";
 const initialViewState = getInitialViewState();
 
 function TrafficMap({ props }) {
-  const { trafficData } = props;
-  const mapData = getMapData(trafficData);
+  const { trafficData, snapshotIndex } = props;
+  const mapData = getMapData(trafficData, snapshotIndex);
   const layer = getColumnIntersectionLayer(mapData);
 
   return (
@@ -30,22 +30,26 @@ function TrafficMap({ props }) {
 
 export default TrafficMap;
 
-function getMapData(trafficData) {
+function getMapData(trafficData, snapshotIndex) {
   const pairs = toPairs(trafficData);
   const maxCount = getMaxCount(pairs);
 
   return map(pairs, ([intersection, { data, location }]) => ({
     intersection,
     location,
-    trafficLoad: getLatestCount(data) / maxCount,
+    trafficLoad: getLatestCount(data, snapshotIndex) / maxCount,
   }));
 }
 
-function getLatestCount(data) {
+function getLatestCount(data, snapshotIndex) {
   const sortedData = sortBy(data, ({ t }) => Date.parse(t));
-  const latestData = last(sortedData);
 
-  return latestData["c"];
+  if (snapshotIndex >= sortedData.length) {
+    return -1;
+  }
+
+  const dataAtIndex = snapshotIndex === -1 ? last(sortedData) : sortedData[snapshotIndex];
+  return dataAtIndex["c"];
 }
 
 function getMaxCount(pairs) {
