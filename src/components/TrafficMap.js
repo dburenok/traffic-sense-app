@@ -2,16 +2,17 @@ import { useState } from "react";
 import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react";
 import { ColumnLayer } from "@deck.gl/layers";
-import { map, values } from "lodash";
-import Box from "@mui/material/Box";
-import Slider from "@mui/material/Slider";
+import { map, values, toPairs, sortBy, last } from "lodash";
+// import Box from "@mui/material/Box";
+// import Slider from "@mui/material/Slider";
 
 const initialViewState = getInitialViewState();
 
 function TrafficMap({ props }) {
-  const { mapData } = props;
-  const [columnRadius, setColumnRadius] = useState(100);
+  const { trafficData } = props;
+  const mapData = getMapData(trafficData);
 
+  const [columnRadius, setColumnRadius] = useState(100);
   const layer = getColumnIntersectionLayer(mapData, columnRadius);
 
   return (
@@ -30,7 +31,7 @@ function TrafficMap({ props }) {
           mapStyle="mapbox://styles/mapbox/streets-v9"
         />
       </DeckGL>
-      <Box sx={{ width: 600 }}>
+      {/* <Box sx={{ width: 600 }}>
         <Slider
           aria-label="column-radius"
           valueLabelDisplay="auto"
@@ -42,12 +43,34 @@ function TrafficMap({ props }) {
           scale={calculateRepresentationValue}
           onChange={(_, newValue) => handleSliderChange(newValue, setColumnRadius)}
         />
-      </Box>
+      </Box> */}
     </>
   );
 }
 
 export default TrafficMap;
+
+function getMapData(trafficData) {
+  const pairs = toPairs(trafficData);
+  const maxCount = getMaxCount(pairs);
+
+  return map(pairs, ([intersection, { data, location }]) => ({
+    intersection,
+    location,
+    trafficLoad: getLatestCount(data) / maxCount,
+  }));
+}
+
+function getLatestCount(data) {
+  const sortedData = sortBy(data, ({ t }) => Date.parse(t));
+  const latestData = last(sortedData);
+
+  return latestData["c"];
+}
+
+function getMaxCount(pairs) {
+  return Math.max(...map(pairs, ([_, { data }]) => Math.max(...map(data, "c"))));
+}
 
 function getInitialViewState() {
   return {
@@ -81,28 +104,4 @@ function getFillColor({ trafficLoad }) {
   }
 
   return [255, (1 - (trafficLoad * 2 - 1)) * 255, 0];
-}
-
-function calculateRepresentationValue(value) {
-  if (value === 6) {
-    return "Wiry";
-  }
-
-  if (value === 8) {
-    return "Slim";
-  }
-
-  if (value === 10) {
-    return "Standard";
-  }
-
-  if (value === 12) {
-    return "Thick";
-  }
-
-  return "Chonky";
-}
-
-function handleSliderChange(newValue, setColumnRadius) {
-  setColumnRadius(newValue * newValue);
 }

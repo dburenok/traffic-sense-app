@@ -12,9 +12,7 @@ function App() {
   const [loadingDone, setLoadingDone] = useState(false);
 
   useEffect(() => {
-    fetchTrafficData().then((data) => {
-      setTrafficData(data);
-    });
+    fetchTrafficData().then((data) => setTrafficData(data));
   }, []);
 
   if (isEmpty(trafficData) || !loadingDone) {
