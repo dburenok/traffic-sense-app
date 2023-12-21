@@ -2,6 +2,7 @@ import Map from "react-map-gl";
 import { map, values, toPairs, sortBy, last } from "lodash";
 import DeckGL from "@deck.gl/react";
 import { ColumnLayer } from "@deck.gl/layers";
+import Box from "@mui/material/Box";
 
 const initialViewState = getInitialViewState();
 
@@ -11,20 +12,16 @@ function TrafficMap({ props }) {
   const layer = getColumnIntersectionLayer(mapData);
 
   return (
-    <DeckGL
-      style={{ position: "relative" }}
-      height={500}
-      initialViewState={initialViewState}
-      controller={true}
-      layers={[layer]}
-    >
-      <Map
-        reuseMaps={true}
-        attributionControl={false}
-        antialias={true}
-        mapStyle="mapbox://styles/mapbox/outdoors-v12"
-      />
-    </DeckGL>
+    <Box sx={{ height: "50vh" }}>
+      <DeckGL style={{ position: "relative" }} initialViewState={initialViewState} controller={true} layers={[layer]}>
+        <Map
+          reuseMaps={true}
+          attributionControl={false}
+          antialias={true}
+          mapStyle="mapbox://styles/mapbox/outdoors-v12"
+        />
+      </DeckGL>{" "}
+    </Box>
   );
 }
 

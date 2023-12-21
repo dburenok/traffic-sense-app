@@ -22,7 +22,7 @@ function Dashboard({ props }) {
   return (
     <ThemeProvider theme={darkTheme}>
       <Navbar />
-      <Container maxWidth="lg" sx={{ mt: "10px" }}>
+      <Container maxWidth="lg" sx={{ mt: "15px" }}>
         <Stack spacing={0.5}>
           <Card variant="outlined">
             <TrafficMap props={{ trafficData, snapshotIndex }} />
