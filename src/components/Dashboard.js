@@ -17,7 +17,7 @@ const darkTheme = createTheme({
 function Dashboard({ props }) {
   const { trafficData } = props;
 
-  const [snapshotIndex, setSnapshotIndex] = useState(0);
+  const [snapshotIndex, setSnapshotIndex] = useState(-1);
 
   return (
     <ThemeProvider theme={darkTheme}>

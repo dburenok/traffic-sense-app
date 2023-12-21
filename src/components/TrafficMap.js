@@ -8,6 +8,7 @@ const initialViewState = getInitialViewState();
 
 function TrafficMap({ props }) {
   const { trafficData, snapshotIndex } = props;
+
   const mapData = getMapData(trafficData, snapshotIndex);
   const layer = getColumnIntersectionLayer(mapData);
 
