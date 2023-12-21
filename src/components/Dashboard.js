@@ -26,7 +26,7 @@ function Dashboard({ props }) {
           </Card>
 
           <Card variant="outlined">
-            <Box sx={{ height: "200px" }}>
+            <Box>
               <TrafficChart props={{ trafficData }} />
             </Box>
           </Card>

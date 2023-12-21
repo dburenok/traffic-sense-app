@@ -1,51 +1,30 @@
-import { useState } from "react";
 import Map from "react-map-gl";
 import { map, values, toPairs, sortBy, last } from "lodash";
 import DeckGL from "@deck.gl/react";
 import { ColumnLayer } from "@deck.gl/layers";
-
-// import Box from "@mui/material/Box";
-// import Slider from "@mui/material/Slider";
 
 const initialViewState = getInitialViewState();
 
 function TrafficMap({ props }) {
   const { trafficData } = props;
   const mapData = getMapData(trafficData);
-
-  const [columnRadius, setColumnRadius] = useState(100);
-  const layer = getColumnIntersectionLayer(mapData, columnRadius);
+  const layer = getColumnIntersectionLayer(mapData);
 
   return (
-    <>
-      <DeckGL
-        style={{ position: "relative" }}
-        height={500}
-        initialViewState={initialViewState}
-        controller={true}
-        layers={[layer]}
-      >
-        <Map
-          reuseMaps={true}
-          attributionControl={false}
-          antialias={true}
-          mapStyle="mapbox://styles/mapbox/outdoors-v12"
-        />
-      </DeckGL>
-      {/* <Box sx={{ width: 600 }}>
-        <Slider
-          aria-label="column-radius"
-          valueLabelDisplay="auto"
-          defaultValue={10}
-          step={2}
-          min={6}
-          max={14}
-          marks={true}
-          scale={calculateRepresentationValue}
-          onChange={(_, newValue) => handleSliderChange(newValue, setColumnRadius)}
-        />
-      </Box> */}
-    </>
+    <DeckGL
+      style={{ position: "relative" }}
+      height={500}
+      initialViewState={initialViewState}
+      controller={true}
+      layers={[layer]}
+    >
+      <Map
+        reuseMaps={true}
+        attributionControl={false}
+        antialias={true}
+        mapStyle="mapbox://styles/mapbox/outdoors-v12"
+      />
+    </DeckGL>
   );
 }
 
@@ -83,14 +62,14 @@ function getInitialViewState() {
   };
 }
 
-function getColumnIntersectionLayer(chartDataSnapshot, columnRadius) {
+function getColumnIntersectionLayer(chartDataSnapshot) {
   return new ColumnLayer({
     data: map(values(chartDataSnapshot), ({ location, trafficLoad }) => ({
       location: [parseFloat(location.long), parseFloat(location.lat)],
       trafficLoad,
     })),
     diskResolution: 15,
-    radius: columnRadius,
+    radius: 100,
     extruded: true,
     elevationScale: 4000,
     getPosition: ({ location }) => location,
