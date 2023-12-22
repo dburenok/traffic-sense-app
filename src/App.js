@@ -9,14 +9,14 @@ const DATA_URL = process.env.REACT_APP_DATA_URL;
 
 function App() {
   const [trafficData, setTrafficData] = useState({});
-  const [loadingDone, setLoadingDone] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     fetchTrafficData().then((data) => setTrafficData(data));
   }, []);
 
-  if (isEmpty(trafficData) || !loadingDone) {
-    return <LoadingState props={{ setLoadingDone }} />;
+  if (isEmpty(trafficData) || !ready) {
+    return <LoadingState props={{ setReady }} />;
   }
 
   return <Dashboard props={{ trafficData }} />;
