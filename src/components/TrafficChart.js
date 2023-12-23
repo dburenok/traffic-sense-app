@@ -1,7 +1,6 @@
 import { Chart as ChartJS, TimeScale } from "chart.js/auto";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
-import { map, toPairs, entries } from "lodash";
 import Box from "@mui/material/Box";
 import Slider from "@mui/material/Slider";
 
@@ -10,9 +9,16 @@ ChartJS.register(TimeScale);
 const chartOptions = getChartOptions();
 
 function TrafficChart({ props }) {
-  const { trafficData, setSnapshotIndex } = props;
-  const chartData = getChartData(trafficData);
-  const numSnapshots = chartData.datasets[0].data.length;
+  const { chartData, numSnapshots, snapshotIndex, setSnapshotIndex } = props;
+
+  function valueLabelFormat(selectedIndex) {
+    const { x } = chartData.datasets[0].data[selectedIndex - 1];
+
+    return new Date(Date.parse(x)).toLocaleString("en-US", {
+      hour: "numeric",
+      hour12: true,
+    });
+  }
 
   return (
     <Box
@@ -22,7 +28,7 @@ function TrafficChart({ props }) {
         alignItems: "center",
       }}
     >
-      <Box sx={{ height: "200px", width: "97%" }}>
+      <Box sx={{ height: "15vh", width: "97%", ml: "8px" }}>
         <Line data={chartData} options={chartOptions} />
       </Box>
       <Box
@@ -36,11 +42,12 @@ function TrafficChart({ props }) {
         <Slider
           aria-label="time-selector"
           valueLabelDisplay="auto"
-          defaultValue={Math.floor(numSnapshots / 2)}
+          value={snapshotIndex + 1}
           step={1}
           min={1}
           max={numSnapshots}
           marks={true}
+          valueLabelFormat={valueLabelFormat}
           onChange={(_, newIndex) => setSnapshotIndex(newIndex - 1)}
         />
       </Box>
@@ -81,35 +88,4 @@ function getChartOptions() {
       legend: { display: false },
     },
   };
-}
-
-function getChartData(trafficData) {
-  const mergedCounts = getMergedCounts(trafficData);
-  const mergedCountsData = map(entries(mergedCounts), ([t, c]) => ({ x: new Date(Date.parse(t)), y: c }));
-
-  return {
-    datasets: [
-      {
-        label: "hourly-traffic",
-        data: mergedCountsData,
-      },
-    ],
-  };
-}
-
-function getMergedCounts(trafficData) {
-  const mergedCounts = new Map();
-  const pairs = toPairs(trafficData);
-
-  for (const [, { data }] of pairs) {
-    for (const { t, c } of data) {
-      if (mergedCounts.has(t)) {
-        mergedCounts.set(t, mergedCounts.get(t) + c);
-      } else {
-        mergedCounts.set(t, c);
-      }
-    }
-  }
-
-  return mergedCounts;
 }
