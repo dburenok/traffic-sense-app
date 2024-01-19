@@ -5,7 +5,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import Card from "@mui/material/Card";
-import ButtonGroup from "@mui/material/ButtonGroup";
+// import ButtonGroup from "@mui/material/ButtonGroup";
 import { Typography } from "@mui/material";
 import Slider from "@mui/material/Slider";
 

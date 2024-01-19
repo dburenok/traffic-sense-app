@@ -35,7 +35,6 @@ function Dashboard({ props }) {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      Snapshot index: {snapshotIndex}
       <Navbar props={{ setSelectedPage }} />
       <Container maxWidth="100%">
         {selectedPage === "map" ? (
@@ -116,14 +115,9 @@ function getTrafficLoad(data, snapshotIndex) {
   const pairs = toPairs(data);
   const continuousCounts = [];
 
-  for (const [date, counts] of pairs) {
+  for (const [, counts] of pairs) {
     const normalizedCounts = counts.length !== 96 ? dropRight(counts) : counts; // don't show current, incomplete quarter-hour
-    const msPerQuarterHour = 15 * 60 * 1000;
-    let timestamp = Date.parse(`${date}T00:00:00.000-08:00`);
-    forEach(normalizedCounts, (count) => {
-      continuousCounts.push(count);
-      timestamp += msPerQuarterHour;
-    });
+    continuousCounts.push(...normalizedCounts);
   }
 
   if (snapshotIndex >= continuousCounts.length) {

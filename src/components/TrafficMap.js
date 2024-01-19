@@ -2,7 +2,6 @@ import Map from "react-map-gl";
 import { map, values } from "lodash";
 import DeckGL from "@deck.gl/react";
 import { ColumnLayer } from "@deck.gl/layers";
-import Box from "@mui/material/Box";
 
 const initialViewState = getInitialViewState();
 

@@ -10,7 +10,7 @@ export default function Navbar({ props }) {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ mr: "50px" }}>
-          TrafficSense
+          Traffic Sense
         </Typography>
         <Button color="inherit" onClick={() => setSelectedPage("map")}>
           Map
