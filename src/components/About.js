@@ -41,12 +41,12 @@ export default function About() {
           entire week. You are, however, free to use the data in any way you wish.
         </Typography>
 
-        <img width={"500px"} src={"./example.jpg"} />
+        <img width={"500px"} src={"./example.jpg"} alt="Traffic camera example" />
         <Typography variant="p" lineHeight={"1.5em"} gutterBottom sx={{ mb: "15px" }}>
           We source image data directly from publicly-available traffic cameras.
         </Typography>
 
-        <img width={"500px"} src={"./inference-result.jpg"} />
+        <img width={"500px"} src={"./inference-result.jpg"} alt="Object detection example" />
         <Typography variant="p" lineHeight={"1.5em"} gutterBottom sx={{ mb: "15px" }}>
           Using a state-of-the-art object-detection model, we process thousands of images every hour to count the number
           of vehicles at various intersections. Further processing is done to smooth and heal the data, so that useful
