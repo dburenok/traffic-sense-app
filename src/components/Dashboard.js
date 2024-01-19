@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
+import { map, toPairs, forEach, dropRight, filter } from "lodash";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Container from "@mui/material/Container";
-import Card from "@mui/material/Card";
-import Stack from "@mui/material/Stack";
-import { map, toPairs, entries } from "lodash";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
 import TrafficMap from "./TrafficMap";
 import TrafficChart from "./TrafficChart";
 import Navbar from "./Navbar";
@@ -16,33 +16,50 @@ const darkTheme = createTheme({
   },
 });
 
+const ANIMATION_INTERVAL = 1000 / 60;
+
 function Dashboard({ props }) {
   const { trafficData } = props;
-  const chartData = getChartData(trafficData);
-  const numSnapshots = chartData.datasets[0].data.length;
 
   const [selectedPage, setSelectedPage] = useState("map");
   const [snapshotIndex, setSnapshotIndex] = useState(0);
+  const [animationSpeed, setAnimationSpeed] = useState(30);
   const [playing, setPlaying] = useState(false);
+
+  const chartData = useMemo(() => getChartData(trafficData, snapshotIndex), [trafficData, snapshotIndex]);
+  const mapData = useMemo(() => getMapData(trafficData, snapshotIndex), [trafficData, snapshotIndex]);
+  const numSnapshots = chartData.datasets[0].data.length;
+
+  const delay = 5 * ANIMATION_INTERVAL * (1 - animationSpeed / 100);
+  useInterval(() => setSnapshotIndex((snapshotIndex + 1) % numSnapshots), playing ? delay : null);
 
   return (
     <ThemeProvider theme={darkTheme}>
+      Snapshot index: {snapshotIndex}
       <Navbar props={{ setSelectedPage }} />
-      <Container maxWidth="lg" sx={{ mt: "15px" }}>
+      <Container maxWidth="100%">
         {selectedPage === "map" ? (
-          <Stack spacing={0.5}>
-            <Card variant="outlined">
-              <TrafficMap props={{ trafficData, snapshotIndex }} />
-            </Card>
-
-            <Card variant="outlined">
-              <TrafficChart props={{ chartData, numSnapshots, snapshotIndex, setSnapshotIndex }} />
-            </Card>
-
-            {/* <Card variant="outlined">
-              <Settings props={{ playing, setPlaying }} />
-            </Card> */}
-          </Stack>
+          <Grid container spacing={1}>
+            <Grid item xs={12}>
+              <Box sx={{ height: "75vh" }}>
+                <TrafficMap props={{ mapData }} />
+              </Box>
+            </Grid>
+            <Grid item lg={10} xs={12}>
+              <TrafficChart props={{ chartData }} />
+            </Grid>
+            <Grid item lg={2} xs={12}>
+              <Settings
+                props={{
+                  playing,
+                  setPlaying,
+                  resetIndex: () => setSnapshotIndex(0),
+                  animationSpeed,
+                  setAnimationSpeed,
+                }}
+              />
+            </Grid>
+          </Grid>
         ) : (
           <About />
         )}
@@ -53,33 +70,88 @@ function Dashboard({ props }) {
 
 export default Dashboard;
 
-function getChartData(trafficData) {
-  const mergedCounts = getMergedCounts(trafficData);
-  const mergedCountsData = map(entries(mergedCounts), ([t, c]) => ({ x: new Date(Date.parse(t)), y: c }));
+function getChartData(trafficData, snapshotIndex) {
+  const mergedCounts = trafficData["*"].data;
+  const pairs = toPairs(mergedCounts);
+  const data = [];
+
+  for (const [date, counts] of pairs) {
+    const normalizedCounts = counts.length !== 96 ? dropRight(counts) : counts; // don't show current, incomplete quarter-hour
+    const msPerQuarterHour = 15 * 60 * 1000;
+    let timestamp = Date.parse(`${date}T00:00:00.000-08:00`);
+    forEach(normalizedCounts, (count) => {
+      data.push({
+        x: new Date(timestamp),
+        y: count,
+      });
+
+      timestamp += msPerQuarterHour;
+    });
+  }
 
   return {
     datasets: [
       {
-        label: "hourly-traffic",
-        data: mergedCountsData,
+        label: "live-traffic",
+        data,
+        backgroundColor: map(data, (_, i) => (i === snapshotIndex ? "red" : "cyan")),
       },
     ],
   };
 }
 
-function getMergedCounts(trafficData) {
-  const mergedCounts = new Map();
-  const pairs = toPairs(trafficData);
+function getMapData(trafficData, snapshotIndex) {
+  const pairs = filter(toPairs(trafficData), ([intersectionName]) => intersectionName !== "*");
 
-  for (const [, { data }] of pairs) {
-    for (const { t, c } of data) {
-      if (mergedCounts.has(t)) {
-        mergedCounts.set(t, mergedCounts.get(t) + c);
-      } else {
-        mergedCounts.set(t, c);
-      }
-    }
+  return map(pairs, ([intersection, { data, location }]) => {
+    return {
+      intersection,
+      location,
+      trafficLoad: getTrafficLoad(data, snapshotIndex),
+    };
+  });
+}
+
+function getTrafficLoad(data, snapshotIndex) {
+  const pairs = toPairs(data);
+  const continuousCounts = [];
+
+  for (const [date, counts] of pairs) {
+    const normalizedCounts = counts.length !== 96 ? dropRight(counts) : counts; // don't show current, incomplete quarter-hour
+    const msPerQuarterHour = 15 * 60 * 1000;
+    let timestamp = Date.parse(`${date}T00:00:00.000-08:00`);
+    forEach(normalizedCounts, (count) => {
+      continuousCounts.push(count);
+      timestamp += msPerQuarterHour;
+    });
   }
 
-  return mergedCounts;
+  if (snapshotIndex >= continuousCounts.length) {
+    return -1;
+  }
+
+  const max = Math.max(...continuousCounts);
+  if (max === 0) {
+    return 0;
+  }
+
+  return continuousCounts[snapshotIndex] / max;
+}
+
+function useInterval(callback, delay) {
+  const savedCallback = useRef();
+
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  useEffect(() => {
+    function tick() {
+      savedCallback.current();
+    }
+    if (delay !== null) {
+      let id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
 }

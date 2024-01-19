@@ -1,4 +1,4 @@
-const MIN_LOAD_TIME_MS = 1000;
+const MIN_LOAD_TIME_MS = 1500;
 
 function LoadingState({ props }) {
   const { setReady } = props;

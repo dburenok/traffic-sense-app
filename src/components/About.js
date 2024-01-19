@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 
 export default function About({ props }) {
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "start", mt: "15px" }}>
       <Typography variant="h4" textAlign={"left"} gutterBottom>
         <b>TrafficSense</b> is a (near) real-time visualization of traffic patterns in Vancouver, BC, Canada.
       </Typography>
