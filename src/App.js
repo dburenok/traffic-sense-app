@@ -5,7 +5,8 @@ import "./App.css";
 import LoadingState from "./components/LoadingState";
 import Dashboard from "./components/Dashboard";
 
-const DATA_URL = process.env.REACT_APP_DATA_URL;
+const DATA_URL =
+  process.env.REACT_APP_ENV === "dev" ? "http://localhost:3001/api/data/" : process.env.REACT_APP_DATA_URL;
 
 function App() {
   const [trafficData, setTrafficData] = useState({});

@@ -27,7 +27,7 @@ export default function About() {
         </Typography>
 
         <Typography variant="p" lineHeight={"1.5em"} gutterBottom sx={{ mb: "15px" }}>
-          Real-time, rolling 7-day traffic data is available at the following{" "}
+          Real-time, rolling 3-day traffic data is available at the following{" "}
           <a href="https://os47h27e7vcx67ax4qfeqsfrou0bdxze.lambda-url.us-west-2.on.aws/">link</a>. Data is grouped by
           intersection (ex. "alma-st-and-w-10th-av"), and the vehicle counts are stored compactly under the "data"
           field, with all days except the last one containing exactly 96 data points, one for each quarter-hour period

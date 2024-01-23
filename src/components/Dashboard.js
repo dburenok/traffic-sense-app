@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { map, toPairs, forEach, dropRight, filter } from "lodash";
+import { map, toPairs, forEach, filter, values, flatten, reduce } from "lodash";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
@@ -8,7 +8,7 @@ import TrafficMap from "./TrafficMap";
 import TrafficChart from "./TrafficChart";
 import Navbar from "./Navbar";
 import About from "./About";
-// import Settings from "./Settings";
+import Settings from "./Settings";
 
 const darkTheme = createTheme({
   palette: {
@@ -21,9 +21,14 @@ function Dashboard({ props }) {
 
   const [selectedPage, setSelectedPage] = useState("map");
   const [snapshotIndex, setSnapshotIndex] = useState(0);
+  const [dataMode, setDataMode] = useState("relative");
 
+  const maxNumVehicles = useMemo(() => getMaxNumVehicles(trafficData), [trafficData]);
   const chartData = useMemo(() => getChartData(trafficData, snapshotIndex), [trafficData, snapshotIndex]);
-  const mapData = useMemo(() => getMapData(trafficData, snapshotIndex), [trafficData, snapshotIndex]);
+  const mapData = useMemo(
+    () => getMapData(trafficData, snapshotIndex, dataMode, maxNumVehicles),
+    [trafficData, snapshotIndex, dataMode, maxNumVehicles]
+  );
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -36,12 +41,12 @@ function Dashboard({ props }) {
                 <TrafficMap props={{ mapData }} />
               </Box>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item lg={10} xs={12}>
               <TrafficChart props={{ chartData, setSnapshotIndex }} />
             </Grid>
-            {/* <Grid item lg={2} xs={12}>
-              <Settings props={{}} />
-            </Grid> */}
+            <Grid item lg={2} xs={12}>
+              <Settings props={{ dataMode, setDataMode }} />
+            </Grid>
           </Grid>
         ) : (
           <About />
@@ -59,10 +64,9 @@ function getChartData(trafficData, snapshotIndex) {
   const data = [];
 
   for (const [date, counts] of pairs) {
-    const normalizedCounts = counts.length !== 96 ? dropRight(counts) : counts; // don't show current, incomplete quarter-hour
     const msPerQuarterHour = 15 * 60 * 1000;
     let timestamp = Date.parse(`${date}T00:00:00.000-08:00`);
-    forEach(normalizedCounts, (count) => {
+    forEach(counts, (count) => {
       data.push({
         x: timestamp,
         y: count,
@@ -83,35 +87,53 @@ function getChartData(trafficData, snapshotIndex) {
   };
 }
 
-function getMapData(trafficData, snapshotIndex) {
+function getMapData(trafficData, snapshotIndex, dataMode, maxNumVehicles) {
   const pairs = filter(toPairs(trafficData), ([intersectionName]) => intersectionName !== "*");
 
-  return map(pairs, ([intersection, { data, location }]) => {
-    return {
-      intersection,
-      location,
-      trafficLoad: getTrafficLoad(data, snapshotIndex),
-    };
-  });
+  return map(pairs, ([intersection, { data, location }]) => ({
+    intersection,
+    location,
+    trafficLoad: getTrafficLoad(data, snapshotIndex, dataMode, maxNumVehicles),
+  }));
 }
 
-function getTrafficLoad(data, snapshotIndex) {
+function getMaxNumVehicles(trafficData) {
+  return reduce(
+    map(
+      map(
+        map(
+          filter(toPairs(trafficData), ([intersectionName]) => intersectionName !== "*"),
+          1
+        ),
+        "data"
+      ),
+      (d) => flatten(values(d))
+    ),
+    (pv, cv) => Math.max(pv, ...cv),
+    0
+  );
+}
+
+function getTrafficLoad(data, snapshotIndex, dataMode, maxNumVehicles) {
   const pairs = toPairs(data);
   const continuousCounts = [];
 
   for (const [, counts] of pairs) {
-    const normalizedCounts = counts.length !== 96 ? dropRight(counts) : counts; // don't show current, incomplete quarter-hour
-    continuousCounts.push(...normalizedCounts);
+    continuousCounts.push(...counts);
   }
 
   if (snapshotIndex >= continuousCounts.length) {
     return -1;
   }
 
-  const max = Math.max(...continuousCounts);
-  if (max === 0) {
-    return 0;
+  if (dataMode === "relative") {
+    const max = Math.max(...continuousCounts);
+    if (max === 0) {
+      return 0;
+    }
+
+    return continuousCounts[snapshotIndex] / max;
   }
 
-  return continuousCounts[snapshotIndex] / max;
+  return continuousCounts[snapshotIndex] / maxNumVehicles;
 }
