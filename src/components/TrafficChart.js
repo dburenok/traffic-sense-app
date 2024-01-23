@@ -6,10 +6,10 @@ import Card from "@mui/material/Card";
 
 ChartJS.register(TimeScale);
 
-const chartOptions = getChartOptions();
-
 function TrafficChart({ props }) {
-  const { chartData } = props;
+  const { chartData, setSnapshotIndex } = props;
+
+  const chartOptions = getChartOptions(setSnapshotIndex);
 
   return (
     <Card>
@@ -27,7 +27,7 @@ function TrafficChart({ props }) {
 
 export default TrafficChart;
 
-function getChartOptions() {
+function getChartOptions(setSnapshotIndex) {
   return {
     scales: {
       x: {
@@ -54,6 +54,18 @@ function getChartOptions() {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
+      tooltip: {
+        yAlign: "bottom",
+        callbacks: {
+          title: (chart) => {
+            const { dataIndex } = chart[0];
+            setSnapshotIndex(dataIndex);
+            const date = new Date(chart[0].dataset.data[dataIndex].x);
+            const weekday = date.toLocaleString("en-CA", { weekday: "short" });
+            return `${weekday}, ${date.toLocaleTimeString("en-CA")}`;
+          },
+        },
+      },
     },
     animation: { duration: 0 },
   };
