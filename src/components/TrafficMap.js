@@ -26,9 +26,9 @@ export default TrafficMap;
 
 function getInitialViewState() {
   return {
-    latitude: 49.25,
-    longitude: -123.09,
-    zoom: 11.8,
+    latitude: 49.24,
+    longitude: -123.1,
+    zoom: 11.4,
     pitch: 45,
     bearing: 0,
   };
@@ -40,10 +40,10 @@ function getColumnIntersectionLayer(mapData) {
       location: [parseFloat(location.long), parseFloat(location.lat)],
       trafficLoad,
     })),
-    diskResolution: 15,
-    radius: 100,
+    diskResolution: 12,
+    radius: 75,
     extruded: true,
-    elevationScale: 4000,
+    elevationScale: 2000,
     getPosition: ({ location }) => location,
     getElevation: ({ trafficLoad }) => trafficLoad,
     getFillColor,
