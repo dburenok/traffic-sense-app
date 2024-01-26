@@ -5,6 +5,8 @@ import { ColumnLayer } from "@deck.gl/layers";
 
 const initialViewState = getInitialViewState();
 
+const TOKEN = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
+
 function TrafficMap({ props }) {
   const { mapData } = props;
 
@@ -17,6 +19,7 @@ function TrafficMap({ props }) {
         attributionControl={false}
         antialias={true}
         mapStyle="mapbox://styles/mapbox/outdoors-v12"
+        mapboxAccessToken={TOKEN}
       />
     </DeckGL>
   );
