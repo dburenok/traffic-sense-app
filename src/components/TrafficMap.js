@@ -1,19 +1,31 @@
+import { useState } from "react";
 import Map from "react-map-gl";
 import { map, values } from "lodash";
 import DeckGL from "@deck.gl/react";
 import { ColumnLayer } from "@deck.gl/layers";
-
-const initialViewState = getInitialViewState();
 
 const TOKEN = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
 
 function TrafficMap({ props }) {
   const { mapData } = props;
 
-  const layer = getColumnIntersectionLayer(mapData);
+  const [columnsRadius, setColumnsRadius] = useState(11.4 * 7);
+
+  const layer = getColumnIntersectionLayer(mapData, columnsRadius);
+
+  function handleZoomChange(viewState) {
+    const { zoom } = viewState;
+    setColumnsRadius((20 - zoom) ** 5 / 500);
+  }
 
   return (
-    <DeckGL style={{ position: "relative" }} initialViewState={initialViewState} controller={true} layers={[layer]}>
+    <DeckGL
+      style={{ position: "relative" }}
+      initialViewState={getInitialViewState()}
+      controller={true}
+      layers={[layer]}
+      onViewStateChange={({ viewState }) => handleZoomChange(viewState)}
+    >
       <Map
         reuseMaps={true}
         attributionControl={false}
@@ -29,22 +41,22 @@ export default TrafficMap;
 
 function getInitialViewState() {
   return {
-    latitude: 49.24,
-    longitude: -123.1,
-    zoom: 11.4,
+    latitude: 49.2,
+    longitude: -123,
+    zoom: 10,
     pitch: 45,
     bearing: 0,
   };
 }
 
-function getColumnIntersectionLayer(mapData) {
+function getColumnIntersectionLayer(mapData, columnRadius) {
   return new ColumnLayer({
     data: map(values(mapData), ({ location, trafficLoad }) => ({
       location: [parseFloat(location.long), parseFloat(location.lat)],
       trafficLoad,
     })),
     diskResolution: 12,
-    radius: 75,
+    radius: columnRadius,
     extruded: true,
     elevationScale: 2000,
     getPosition: ({ location }) => location,

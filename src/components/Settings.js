@@ -9,7 +9,7 @@ export default function Settings({ props }) {
 
   return (
     <Card>
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", p: "10px" }}>
         <Typography gutterBottom>Data Mode</Typography>
         <ToggleButtonGroup
           color="primary"
@@ -18,8 +18,8 @@ export default function Settings({ props }) {
           onChange={(_, dataMode) => setDataMode(dataMode)}
           aria-label="Platform"
         >
-          <ToggleButton value="relative">Relative</ToggleButton>
           <ToggleButton value="absolute">Absolute</ToggleButton>
+          <ToggleButton value="relative">Relative</ToggleButton>
         </ToggleButtonGroup>
       </Box>
     </Card>

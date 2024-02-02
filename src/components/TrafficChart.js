@@ -8,11 +8,14 @@ ChartJS.register(TimeScale);
 
 function TrafficChart({ props }) {
   const { chartData, setSnapshotIndex } = props;
+  const { label } = chartData.datasets[0];
 
   const chartOptions = getChartOptions(setSnapshotIndex);
 
   return (
     <Card>
+      <h5 style={{ margin: "10px" }}>{label}</h5>
+
       <Box
         sx={{
           minHeight: "17vh",
