@@ -12,6 +12,8 @@ import {
   reverse,
   take,
   keys,
+  flattenDeep,
+  sum,
 } from "lodash";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Container from "@mui/material/Container";
@@ -76,7 +78,14 @@ function Dashboard({ props }) {
 export default Dashboard;
 
 function getChartDatas(trafficData, snapshotIndex) {
-  const localities = take(reverse(sortBy(toPairs(trafficData), ([_, data]) => data.length)), 10);
+  const localities = take(
+    reverse(
+      sortBy(toPairs(trafficData), ([_, data]) => {
+        return sum(flattenDeep(map(map(data, "data"), (v) => values(v))));
+      }),
+    ),
+    10,
+  );
 
   const chartDatas = [];
   forEach(localities, ([locality, data]) => {
@@ -104,7 +113,7 @@ function getLocalityData(data) {
   for (const localityIntersection of localityIntersections) {
     const localityIntersectionPairs = toPairs(localityIntersection);
 
-    for (const [_, counts] of localityIntersectionPairs) {
+    for (const [, counts] of localityIntersectionPairs) {
       for (let j = 0; j < counts.length; j++) {
         localityIntersectionCounts[j] = counts[j] + (localityIntersectionCounts[j] ?? 0);
       }

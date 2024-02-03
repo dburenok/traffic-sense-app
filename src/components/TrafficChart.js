@@ -14,7 +14,7 @@ function TrafficChart({ props }) {
 
   return (
     <Card>
-      <h5 style={{ margin: "10px" }}>{label}</h5>
+      <h5 style={{ margin: "10px" }}>{label === "*" ? "British Columbia" : label}</h5>
 
       <Box
         sx={{
