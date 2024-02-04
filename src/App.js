@@ -10,21 +10,25 @@ const DATA_URL =
 
 function App() {
   const [trafficData, setTrafficData] = useState({});
+  const [maxNumVehicles, setMaxNumVehicles] = useState(1);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    fetchTrafficData().then((data) => setTrafficData(data));
+    fetchTrafficData().then(({ data, info }) => {
+      setTrafficData(data);
+      setMaxNumVehicles(info.maxNumVehicles);
+    });
   }, []);
 
   if (isEmpty(trafficData) || !ready) {
     return <LoadingState props={{ setReady }} />;
   }
 
-  return <Dashboard props={{ trafficData }} />;
+  return <Dashboard props={{ trafficData, maxNumVehicles }} />;
 }
 
 export default App;
 
 async function fetchTrafficData() {
-  return Axios.get(DATA_URL).then((res) => (isNil(res.data) ? {} : res.data["data"] ?? {}));
+  return Axios.get(DATA_URL).then((res) => (isNil(res.data) ? {} : res.data));
 }

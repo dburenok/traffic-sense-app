@@ -7,7 +7,6 @@ import {
   values,
   flatten,
   head,
-  flattenDepth,
   sortBy,
   reverse,
   take,
@@ -34,14 +33,13 @@ const darkTheme = createTheme({
 });
 
 function Dashboard({ props }) {
-  const { trafficData } = props;
+  const { trafficData, maxNumVehicles } = props;
 
   const [selectedPage, setSelectedPage] = useState("map");
   const [snapshotIndex, setSnapshotIndex] = useState(0);
   const [dataMode, setDataMode] = useState("absolute");
 
-  const maxNumVehicles = useMemo(() => getMaxNumVehicles(trafficData), [trafficData]);
-  const chartDatas = useMemo(() => getChartDatas(trafficData, snapshotIndex), [trafficData, snapshotIndex]);
+  const allChartData = useMemo(() => getAllChartData(trafficData, snapshotIndex), [trafficData, snapshotIndex]);
   const mapData = useMemo(
     () => getMapData(trafficData, snapshotIndex, dataMode, maxNumVehicles),
     [trafficData, snapshotIndex, dataMode, maxNumVehicles],
@@ -58,12 +56,12 @@ function Dashboard({ props }) {
                 <TrafficMap props={{ mapData }} />
               </Box>
             </Grid>
-            <Grid item lg={10} xs={12}>
-              {map(chartDatas, (chartData, i) => (
+            <Grid item xs={12}>
+              {map(allChartData, (chartData, i) => (
                 <TrafficChart key={i} props={{ chartData, setSnapshotIndex }} />
               ))}
             </Grid>
-            <Grid item lg={2} xs={12}>
+            <Grid item xs={12}>
               <Settings props={{ dataMode, setDataMode }} />
             </Grid>
           </Grid>
@@ -77,51 +75,79 @@ function Dashboard({ props }) {
 
 export default Dashboard;
 
-function getChartDatas(trafficData, snapshotIndex) {
+function getAllChartData(trafficData, snapshotIndex) {
   const localities = take(
     reverse(
       sortBy(toPairs(trafficData), ([_, data]) => {
         return sum(flattenDeep(map(map(data, "data"), (v) => values(v))));
       }),
     ),
-    10,
+    6,
   );
 
-  const chartDatas = [];
-  forEach(localities, ([locality, data]) => {
-    const localityData = getLocalityData(data);
+  return map(localities, ([locality, rawData]) => {
+    let data;
+    if (locality === "*") {
+      data = getOverallData(rawData);
+    } else {
+      data = getLocalityData(rawData);
+    }
 
-    chartDatas.push({
+    return {
       datasets: [
         {
-          label: locality,
-          data: localityData,
-          backgroundColor: map(localityData, (_, i) => (i === snapshotIndex ? "red" : "cyan")),
+          label: locality === "*" ? "British Columbia" : locality,
+          data,
+          backgroundColor: map(data, (_, i) => (i === snapshotIndex ? "red" : "cyan")),
         },
       ],
-    });
+    };
   });
-
-  return chartDatas;
 }
 
-function getLocalityData(data) {
+function getOverallData(rawData) {
+  const [{ data }] = rawData;
+
+  const countsArray = map(
+    sortBy(toPairs(data), (v) => v[0]),
+    ([date, counts]) => counts,
+  );
+  const flattenedCounts = flatten(countsArray);
+
+  const dataStartDate = head(keys(data).sort());
+  let timestamp = Date.parse(`${dataStartDate}T00:00:00.000-08:00`);
+
+  const overallData = [];
+  forEach(flattenedCounts, (count) => {
+    overallData.push({
+      x: timestamp,
+      y: count,
+    });
+
+    timestamp += GRANULARITY_INTERVAL_MS;
+  });
+  return overallData;
+}
+
+function getLocalityData(rawData) {
   const localityData = [];
-  const localityIntersections = map(data, "data");
-  const localityIntersectionCounts = [];
+  const localityIntersections = map(rawData, "data");
+
+  const numCounts = flatten(values(localityIntersections[0])).length;
+  const localityIntersectionCounts = new Array(numCounts).fill(0);
 
   for (const localityIntersection of localityIntersections) {
-    const localityIntersectionPairs = toPairs(localityIntersection);
-
-    for (const [, counts] of localityIntersectionPairs) {
-      for (let j = 0; j < counts.length; j++) {
-        localityIntersectionCounts[j] = counts[j] + (localityIntersectionCounts[j] ?? 0);
-      }
-    }
+    const counts = map(
+      sortBy(toPairs(localityIntersection), (v) => v[0]),
+      ([date, counts]) => counts,
+    );
+    const flattenedCounts = flatten(counts);
+    forEach(flattenedCounts, (val, i) => (localityIntersectionCounts[i] += val));
   }
 
   const dataStartDate = head(keys(localityIntersections[0]).sort());
   let timestamp = Date.parse(`${dataStartDate}T00:00:00.000-08:00`);
+
   forEach(localityIntersectionCounts, (count) => {
     localityData.push({
       x: timestamp,
@@ -142,18 +168,6 @@ function getMapData(trafficData, snapshotIndex, dataMode, maxNumVehicles) {
     location: { lat, long },
     trafficLoad: getTrafficLoad(data, snapshotIndex, dataMode, maxNumVehicles),
   }));
-}
-
-function getMaxNumVehicles(trafficData) {
-  const granularPairs = filter(toPairs(trafficData), ([localityName, _]) => localityName !== "*");
-  const intersections = map(granularPairs, (v) => v[1]);
-  const intersectionsData = map(flatten(intersections), "data");
-  const allCounts = flattenDepth(
-    map(intersectionsData, (v) => values(v)),
-    2,
-  );
-
-  return Math.max(...allCounts);
 }
 
 function getTrafficLoad(data, snapshotIndex, dataMode, maxNumVehicles) {
