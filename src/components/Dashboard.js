@@ -1,19 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-  map,
-  toPairs,
-  forEach,
-  filter,
-  values,
-  flatten,
-  head,
-  sortBy,
-  reverse,
-  take,
-  keys,
-  flattenDeep,
-  sum,
-} from "lodash";
+import { map, toPairs, forEach, filter, values, flatten, head, sortBy, keys } from "lodash";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
@@ -33,7 +19,8 @@ const darkTheme = createTheme({
 });
 
 function Dashboard({ props }) {
-  const { trafficData, maxNumVehicles } = props;
+  const { trafficData, trafficInfo } = props;
+  const { maxNumVehicles } = trafficInfo;
 
   const [selectedPage, setSelectedPage] = useState("map");
   const [snapshotIndex, setSnapshotIndex] = useState(0);
@@ -76,14 +63,7 @@ function Dashboard({ props }) {
 export default Dashboard;
 
 function getAllChartData(trafficData, snapshotIndex) {
-  const localities = take(
-    reverse(
-      sortBy(toPairs(trafficData), ([_, data]) => {
-        return sum(flattenDeep(map(map(data, "data"), (v) => values(v))));
-      }),
-    ),
-    6,
-  );
+  const localities = toPairs(trafficData["localities"]);
 
   return map(localities, ([locality, rawData]) => {
     let data;
@@ -161,7 +141,7 @@ function getLocalityData(rawData) {
 }
 
 function getMapData(trafficData, snapshotIndex, dataMode, maxNumVehicles) {
-  const pairs = filter(toPairs(trafficData), ([locality]) => locality !== "*");
+  const pairs = filter(toPairs(trafficData["localities"]), ([locality]) => locality !== "*");
   const allIntersections = flatten(map(pairs, (v) => v[1]));
 
   return map(allIntersections, ({ lat, long, data }) => ({

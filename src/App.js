@@ -10,13 +10,13 @@ const DATA_URL =
 
 function App() {
   const [trafficData, setTrafficData] = useState({});
-  const [maxNumVehicles, setMaxNumVehicles] = useState(1);
+  const [trafficInfo, setTrafficInfo] = useState({});
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     fetchTrafficData().then(({ data, info }) => {
       setTrafficData(data);
-      setMaxNumVehicles(info.maxNumVehicles);
+      setTrafficInfo(info);
     });
   }, []);
 
@@ -24,7 +24,7 @@ function App() {
     return <LoadingState props={{ setReady }} />;
   }
 
-  return <Dashboard props={{ trafficData, maxNumVehicles }} />;
+  return <Dashboard props={{ trafficData, trafficInfo }} />;
 }
 
 export default App;
