@@ -8,22 +8,14 @@ export default function About() {
     <Container maxWidth="lg">
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "start", mt: "15px" }}>
         <Typography variant="h4" gutterBottom>
-          <b>Traffic Sense</b> is a real-time visualization of vehicle traffic.
+          <b>Traffic Sense</b> is a real-time visualization of vehicle traffic data.
         </Typography>
 
         <Typography variant="p" lineHeight={"1.5em"} gutterBottom sx={{ mb: "15px" }}>
-          Traffic data holds immense value and has numerous use-cases, such as enhancing road safety, alleviating
-          congestion, and determining insurance premiums to name a few. Typically, companies bear substantial costs to
-          acquire proprietary historical traffic data and no easy way exists to procure such data. Once it's gone, it's
-          gone.
-        </Typography>
-
-        <Typography variant="p" lineHeight={"1.5em"} gutterBottom sx={{ mb: "15px" }}>
-          At Traffic Sense, our mission is to retain high-fidelty historical traffic data, draw intelligent insights
-          from this data, and provide a substantial portion of it for free. Currently, we operate exclusively in
-          Vancouver, Canada, with plans for expansion to other cities in the pipeline. We've meticulously designed a
-          distributed service capable of scaling to hundreds of cities all over the world, and our system already
-          captures thousands of vehicle data points every single day.
+          We collect and analyze high-fidelity traffic data, drawing insights about city trends, traffic patterns, and
+          unusual events. Our current architecture only supports Vancouver, Canada, but we have plans to expand into
+          other cities. Our distributed service is capable of scaling to traffic camera datasets all over the world, and
+          we currently capture thousands of vehicle data points every day.
         </Typography>
 
         <Typography variant="p" lineHeight={"1.5em"} gutterBottom sx={{ mb: "15px" }}>
@@ -48,9 +40,9 @@ export default function About() {
 
         <img width={"500px"} src={"./inference-result.jpg"} alt="Object detection example" />
         <Typography variant="p" lineHeight={"1.5em"} gutterBottom sx={{ mb: "15px" }}>
-          Using a state-of-the-art object-detection model, we process thousands of images every hour to count the number
-          of vehicles at various intersections. Further processing is done to smooth and heal the data, so that useful
-          insights can be drawn from it.
+          Using a state-of-the-art object-detection model (YOLOv8, we process thousands of images every hour to count
+          the number of vehicles at various intersections. Further processing is done to smooth and heal the data, so
+          that useful insights can be drawn from it.
         </Typography>
 
         <Typography variant="body1" textAlign={"left"} gutterBottom>
